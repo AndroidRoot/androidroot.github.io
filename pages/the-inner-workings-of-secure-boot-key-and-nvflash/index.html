@@ -1,0 +1,120 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>AndroidRoot.Mobi - The inner workings of Secure Boot key and Nvflash</title>
+
+    <!-- Bootstrap -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="/static/js/html5shiv.min.js"></script>
+    <script src="/static/js/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+
+<nav class="navbar navbar-default navbar-static-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">AndroidRoot.Mobi</a>
+            <p class="navbar-text">Rooting all your tablets!</p>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse navbar-right">
+            <ul class="nav navbar-nav">
+                <li class=""><a href="/">Home</a></li>
+                <li class=""><a href="/pages/about-us/">About Us</a></li>
+                <li class=""><a href="/pages/donations/">Donations</a></li>
+                <li class="dropdown active">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" area-haspopup="true">Technical <span class="caret"></span></a>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <li><a href="/pages/asustransformer-root-cwm-recovery/">Asus Transformer Root + CWM recovery </a></li>
+                        <li><a href="/pages/the-inner-workings-of-secure-boot-key-and-nvflash/">The inner workings of Secure Boot key and Nvflash </a></li>
+
+                    </ul>
+                </li>
+                <li class="dropdown ">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" area-haspopup="true">Guides<span class="caret"></span></a>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <li><a href="/pages/guides/tegra3-guide-nvflash/">Tegra3 Guide: nvflash</a></li>
+                        <li><a href="/pages/guides/tegra3-guide-nvflash-jellybean/">Tegra3 Guide: nvflash NEXUS 7 (and Transformer Jellybeans)</a></li>
+
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <h1>The inner workings of Secure Boot key and Nvflash</h1>
+</div>
+<div class="container">
+        
+
+
+
+<h2><span style="">What is Secure Boot Key and how does it work?</span></h2>
+<p><br>I've been getting lots of questions about this, so here is some simple background:</p>
+<p>The secure boot key is an AES128 encryption key that can used to encrypt various data on the flash memory. It's a generic nvidia tegra2 thing, that the manufacturer can optionally use to make their device more "secure".</p>
+<p>When the SBK is set, it's stored in a one-time-programmable "fuse". This also means that now that the key is out, they can't change it on already released devices, only new devices.</p>
+<p>When the tegra2 starts up, the AES key is available to the hardware AES engine only. E.g. not even the bootloader can read it back! However, the bootloader can *use* the key to encrypt whatever data it wants through the hardware AES engine. And here is the explanation why the blob flashing method actually works! The bootloader checks for the blob in the staging partition and encrypts and flashes it as needed.</p>
+<p>Once the bootloader is done, it clear the key from the AES engine which makes it impossible to encrypt or decrypt things from within the OS.</p>
+<h2><span style="">So what happens when it boots into APX/Nvflash mode?</span></h2>
+<p><br>The basic APX mode is stored in the BootROM and hence can never be changed. It appears to accept only a very limited range of commands, and each command needs to be encrypted using the SBK to be accepted. If it receives a command that's not properly encrypted, it disconnects the USB and appears to be off. This is the dreaded "0x4" error that people have been getting when attempting to get nvflash working.</p>
+<p>It should be noted, that even with the SBK inputted into nvflash, most regular nvflash commands won't be available. I'm still not entirely sure why (and I can't rule out it will change).</p>
+<p>What *is* available, is the nvflash --create command. What this command does is repartition and format all partitions, set bct and odmdata and send over all  needed partitions to the device (and encrypt them as needed). This means a full recovery is possible, but regular ability to flash e.g. just boot.img or read partitions off of the device is not possible at this point.</p>
+<h2><span style="">So what do we need for nvflash?</span></h2>
+<p><br>In order to get a working (e.g. --create) nvflash, we need a few bits of information as well as some files:</p>
+<p></p>
+<ul>
+<ul>
+<li>Secure Boot Key</li>
+</ul>
+</ul>
+<p></p>
+<ul>
+<ul>
+<li>BCT file (boot device setup, ram configuration and a bit more)</li>
+</ul>
+</ul>
+<p></p>
+<ul>
+<ul>
+<li>ODM data (board-specific bit-field specifying various board settings. *Needs* to be correct</li>
+</ul>
+</ul>
+<p></p>
+<ul>
+<ul>
+<li>flash.cfg (e.g. list of settings and names/identifiers of partitions.</li>
+</ul>
+</ul>
+<p></p>
+<p><br>On top of these files, we also need all the partitions, e.g. bootloader.bin, boot.img, recovery.img and system.img. Luckily, these partition files are available in official ASUS updates and can be extracted from the blob file using my blob tools :)</p>
+<p>The first four peices aren't readily available, but through lots of effort and a good deal of luck, we have managed to recreate the needed files. Secure Boot Key has already been released (note that this was by far the hardest!) and the rest will most likely follow over the weekend. Keep in mind that we want to keep this <strong>legal</strong>, so don't expect us to release any ready-made packs for unbricking! We will however make the recreated files available. Since these are recreated and not actual ASUS files, there should be no problems with them.</p>
+<p>I hope this helps give a better understanding of how and what secure boot key is and what it gives us.</p>
+
+
+</div>
+
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="/static/js/jquery-1.11.3.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="/static/js/bootstrap.min.js"></script>
+</body>
+</html>
