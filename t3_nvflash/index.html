@@ -1,0 +1,224 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>AndroidRoot.Mobi - Tegra3 Guide: nvflash </title>
+
+    <!-- Bootstrap -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="/js/html5shiv.min.js"></script>
+    <script src="/js/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+
+<nav class="navbar navbar-default navbar-static-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">AndroidRoot.Mobi</a>
+            <p class="navbar-text">Rooting all your tablets!</p>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse navbar-right">
+            <ul class="nav navbar-nav">
+                <li class=""><a href="/">Home</a></li>
+                <li class=""><a href="/pages/about-us/">About Us</a></li>
+                <li class=""><a href="/pages/donations/">Donations</a></li>
+                <li class="dropdown ">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" area-haspopup="true">Technical <span class="caret"></span></a>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <li><a href="/pages/asustransformer-root-cwm-recovery/">Asus Transformer Root + CWM recovery </a></li>
+                        <li><a href="/pages/the-inner-workings-of-secure-boot-key-and-nvflash/">The inner workings of Secure Boot key and Nvflash </a></li>
+
+                    </ul>
+                </li>
+                <li class="dropdown active">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" area-haspopup="true">Guides<span class="caret"></span></a>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <li><a href="/pages/guides/tegra3-guide-nvflash/">Tegra3 Guide: nvflash</a></li>
+                        <li><a href="/pages/guides/tegra3-guide-nvflash-jellybean/">Tegra3 Guide: nvflash NEXUS 7 (and Transformer Jellybeans)</a></li>
+
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <h1>Tegra3 Guide: nvflash </h1>
+</div>
+<div class="container">
+        
+<h2>Introduction</h2>
+<p><br>After many months of painstaking research and development AndroidRoot.mobi is excited to release the nvflash kit for the ASUS Transformer Prime which will grant you nvflash access to your tablet.</p>
+<p>This guide will walk you through the process of acquiring nvflash access to your Transformer Prime, Transformer TF300 and Transformer TF700 tablet. Note that this has only been tested on TF201 and TF300! TF300TG, TF300TL or similar has a high risk of bricking if you try this on those!</p>
+<p>As part of the process of gaining this access you will need to flash the AndroidRoot patched custom bootloader which will provide numerous other benefits over the stock bootloader. However, flashing the bootloader is a potentially very risky activity so please think carefully before you proceed.</p>
+<p><strong>As part of undertaking this guide you disclaim AndroidRoot and its members of all liability or responsibility for any damage incurred. By performing the following steps you undertake all risks thereof.</strong></p>
+<p><em>Please note that this procedure is an advanced process and should only be completed by competent users.</em></p>
+<h2>The AndroidRoot Patched Bootloader</h2>
+<p><br>The current AndroidRoot.mobi bootloader versions are</p>
+<p></p>
+<ul>
+<ul>
+<li>Transformer Prime: <strong>9.4.2.28r01</strong>.</li>
+</ul>
+</ul>
+<p></p>
+<ul>
+<ul>
+<li>Transformer TF300: <strong>9.4.3.30r01</strong></li>
+</ul>
+</ul>
+<p></p>
+<ul>
+<ul>
+<li>Transformer TF700<strong>: 9.4.5.30r01</strong></li>
+</ul>
+</ul>
+<p></p>
+<p><br>ChangeLog:-</p>
+<blockquote>* Patch: Enable 'fastboot boot' command (removes 'fastboot continue', use 'fastboot reboot' instead).</blockquote>
+<p>* Patch: Force unlocked state (protect your unlock status no matter what happens to your token).</p>
+<p>* Patch: Remove blob requirement from 'fastboot flash' (Flash the raw images and not blob files). (Not TF700)</p>
+<h2> Prerequisites</h2>
+<ol>
+<li>An unlocked Transformer Prime, TF300 or TF700 tablet</li>
+<li>Working fastboot binary &amp; all necessary drivers</li>
+<li>The nvflash binary from NVIDIA (See Downloads)</li>
+<li><strong>For TF201: If you upgraded to Offiical JB it *won't* work!</strong></li>
+<li><strong>For TF300: If you upgraded to Offiical JB it *won't* work!</strong></li>
+<li><strong>For TF700: If you upgraded to 9.4.5.30, it *won't* work!</strong></li>
+<li>Nerves of steel!</li>
+</ol>
+<p></p>
+<h2> Generating your nvflash blob files</h2>
+<p><br>To gain access to nvflash you will need to generate nvflash blob files which will allow you to authenticate with the APX mode on device.</p>
+<p>To begin please download the file suitable for your OS and tablet from the download section.</p>
+<p>When you have downloaded the nvflash pack and unzipped it you will need to reboot your device into fastboot mode. You can do this by rebooting the device and holding the volume down key until "Checking for RCK image" appears, at this stage do nothing until the boot menu loads.  Once you are at the boot menu press the volume down key until the fastboot/usb icon is selected then press the volume up key to put the device into fastboot mode.</p>
+<p>Now that you are in fastboot mode please run the following command to flash the AndroidRoot bootloader:-</p>
+<blockquote>$ fastboot -i 0x0b05 flash staging ebtblob.bin</blockquote>
+<p><br>Please ensure flashing succeeds before continuing this guide.<br>You can verify you have the AndroidRoot bootloader installed as described below.</p>
+<p>After the flash process has completed you will need to reboot your device into fastboot again by following the process above (or otherwise) ensuring this time that instead of the text "This Device is UnLocked" appearing in the top left of the boot screen the text "AndroidRoot 9.4.2.28r01" or "AndroidRoot 9.4.3.30r01" is present instead. We recommend rebooting with the following command:</p>
+<blockquote>$ fastboot -i 0x0b05 reboot</blockquote>
+<p><br>Once you are back in fastboot mode having booted with the AndroidRoot bootloader it is finally time to generate your nvflash blob files with the following command:-</p>
+<blockquote>$ fastboot -i 0x0b05 boot nvfblobgen.img</blockquote>
+<p><br>That command will boot the custom AndroidRoot blob generation boot image and begin generating your required files. Please note that this process can take 20 - 30 seconds and will automatically reboot once it has completed. No progress is displayed during this time, just wait patiently for it to complete. On TF700, fastboot will show an error, but this is expected!</p>
+<p>After the reboot your device should fully boot into Android allowing you to complete the next section of the guide.</p>
+<h2> Accessing nvflash</h2>
+<p><br>Once your blobs have been generated you will need to retrieve them from the "internal" SD card from the AndroidRoot directory (e.g. /sdcard/AndroidRoot). You can do this either through MTP mode or by pulling them using adb.</p>
+<p><strong>** You absolutely must keep these files in triplicate copies - they are your life-line **</strong></p>
+<p>Finally, you will now be able to access nvflash using wheelie. To do this please reboot your tablet into APX mode by holding down the volume up key during the reboot process. If successful the screen should remain blank and be detected over USB by your computer as an NVIDIA APX mode device.</p>
+<p>To "bootstrap" into nvflash using wheelie simply run the following command:-</p>
+<blockquote>$ wheelie --blob blob.bin</blockquote>
+<p><br>If successful your device will boot into nvflash mode and the bootloader screen will appear on the device.</p>
+<p><span>WARNING: If you run the following command it will boot your device into regular android. This is listed as an *EXAMPLE*. Run the commands in "What Next?" section first.</span></p>
+<p><span>From this point you will be able to use nvflash as normal by running commands such as the following to continue booting your device:-</span></p>
+<blockquote><span>$ nvflash --resume --go</span></blockquote>
+<p></p>
+<h2>What Next?</h2>
+<p><br>Good news! You have acquired nvflash access so what should you do next?</p>
+<p>We strongly recommend that absolutely everyone who obtains nvflash access runs the following command:-</p>
+<blockquote>$ nvflash --resume --rawdeviceread 0 2944 bricksafe.img</blockquote>
+<p><br>This is a very important back-up file which is to be stored safely along with your nvflash blob files.</p>
+<p><strong>** Failure to make this back-up file will lead to support being withheld if you brick your device. You have been warned. **</strong></p>
+<p>You should also back-up your unlock token and your device's factory generated configuration by using the following two commands:-</p>
+<blockquote>$ nvflash --resume --read 14 factory-config.img</blockquote>
+<p>$ nvflash --resume --read 7 unlock-token.img<br>Store these files securely with the blob data and bricksafe.img</p>
+<h2>Downloads</h2>
+<p></p>
+<p></p>
+<ul>
+<ul>
+<li>NVFlash: <a href="http://www.androidroot.mobi/download/nvflash_binaries.zip" title="NVFlash Windows">Windows</a> | <a href="http://www.androidroot.mobi/download/nvflash_binaries.tar.bz2" title="NVFlash Linux">Linux</a></li>
+</ul>
+</ul>
+<p></p>
+<ul>
+<ul>
+<li>TF201: <a href="http://www.androidroot.mobi/download/tf201_nvflash.zip">Windows</a> | <a href="http://www.androidroot.mobi/download/tf201_nvflash.tar.bz2">Linux</a></li>
+</ul>
+</ul>
+<p></p>
+<ul>
+<ul>
+<li>TF300: <a href="http://www.androidroot.mobi/download/tf300_nvflashpack.zip">Windows</a> | <a href="http://www.androidroot.mobi/download/tf300_nvflashpack.tar.bz2">Linux</a></li>
+</ul>
+</ul>
+<p></p>
+<ul>
+<ul>
+<li>TF700: <a href="http://www.androidroot.mobi/download/tf700_nvflashpack.zip">Windows</a> | <a href="http://www.androidroot.mobi/download/tf700_nvflashpack.tar.bz2">Linux</a></li>
+</ul>
+</ul>
+<p></p>
+<ul>
+<ul>
+<li>Drivers: <a href="http://forum.xda-developers.com/showthread.php?t=1426502">Windows</a></li>
+</ul>
+</ul>
+<p></p>
+<ul>
+<ul>
+<li>Drivers TF700: <a href="/download/Universal_Naked_Driver_0.7_tf700.zip" title="Universal Naked Driver TF700">Windows</a> (Patched <a href="http://forum.xda-developers.com/showthread.php?t=1426502">Universal Naked Driver</a>)</li>
+</ul>
+</ul>
+<p></p>
+<p></p>
+<h2>Coming Soon</h2>
+<p><br>We hope to provide support for more devices - watch this space.</p>
+<h2>Credits</h2>
+<p><br>In alphabetical order the entire AndroidRoot.mobi team: Bumble-Bee, IEF, kmdm,  lilstevie &amp; RaYmAn.</p>
+<p>Our beta-testers for risking their devices so that you don't have to (in no particular order):</p>
+<p></p>
+<ul>
+<ul>
+<li>Roach` (TF201),</li>
+</ul>
+</ul>
+<p></p>
+<ul>
+<ul>
+<li>XpLoDWilD (TF300, TF700)</li>
+</ul>
+</ul>
+<p></p>
+<ul>
+<ul>
+<li>Ford_Prefect (TF300)</li>
+</ul>
+</ul>
+<p></p>
+<ul>
+<ul>
+<li>AndroidRoot Team ;)</li>
+</ul>
+</ul>
+<p></p>
+<p><br>We would also like to take this opportunity to thank ASUS for providing the ability to unlock the Transformer Prime and to further state that <strong>DRM is not compromised</strong> since the DRM keys have already been erased from the device during the unlock process and our work can only be used on an unlocked device.</p>
+
+
+
+</div>
+
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="/js/jquery-1.11.3.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="/js/bootstrap.min.js"></script>
+</body>
+</html>
